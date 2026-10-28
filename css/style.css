@@ -543,3 +543,9 @@ details[open] > summary svg.i { transform: rotate(180deg); }
 .seg button { white-space: nowrap; }
 .phone .hero { display: block !important; border-radius: 0 0 22px 22px; }
 .phone .search-pill.m { display: flex !important; }
+
+/* Tanda pembuat aplikasi */
+.kredit { font-size: 11px; color: var(--faint); text-align: center; line-height: 1.5; margin-top: 6px; }
+.kredit b { font-weight: 600; color: var(--muted); }
+.sb-user { margin-bottom: 8px; }
+.sb-kredit { margin: 0 12px 12px; }

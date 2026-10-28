@@ -3,6 +3,12 @@
    ============================================================ */
 'use strict';
 
+/** Tanda pembuat aplikasi (tampil di halaman masuk, sidebar, dan menu Lainnya). */
+const PEMBUAT = 'Restu Putra Mulyana';
+function kreditHtml(cfg) {
+  cfg = cfg || S.cfg || S.pub || {};
+  return '<div class="kredit">© ' + new Date().getFullYear() + ' ' + esc(cfg.nama_sekolah || 'SMA PGRI 43 Singaparna') + ' · site by <b>' + esc(PEMBUAT) + '</b></div>';
+}
 const LABEL_PERAN = { admin: 'Admin', bk: 'Guru BK', kesiswaan: 'Kesiswaan', wali: 'Wali Kelas', piket: 'Guru Piket', kepsek: 'Kepala Sekolah', siswa: 'Siswa', ortu: 'Orang Tua' };
 
 /** Menu per peran (sidebar & halaman Lainnya). n = fungsi jumlah lencana. */
@@ -237,7 +243,7 @@ const App = {
       '<div class="sb-label">Navigasi utama</div><nav class="sb-nav" aria-label="Menu utama">' + menu.map(item).join('') +
       '<button class="sb-item ' + (nav === 'notifikasi' ? 'on' : '') + '" data-go="#/notifikasi">' + ic('bell') + '<span class="grow">Notifikasi</span>' + (notif ? '<span class="cnt red">' + notif + '</span>' : '') + '</button>' +
       '<button class="sb-item ' + (nav === 'lainnya' ? 'on' : '') + '" data-go="#/lainnya">' + ic('settings') + '<span class="grow">Profil & Pengaturan</span></button></nav>' +
-      '<div class="sb-user">' + avatar(S.me.nama, 's') + '<div class="grow"><div class="b ell" style="font-size:13px">' + esc(S.me.nama) + '</div><div class="xs muted ell">' + esc(LABEL_PERAN[S.role]) + (S.me.nip && S.me.tipe === 'staf' ? ' · ' + esc(S.me.nip) : '') + '</div></div><button class="icon-btn" data-act-global="keluar" aria-label="Keluar">' + ic('log-out') + '</button></div>';
+      '<div class="sb-user">' + avatar(S.me.nama, 's') + '<div class="grow"><div class="b ell" style="font-size:13px">' + esc(S.me.nama) + '</div><div class="xs muted ell">' + esc(LABEL_PERAN[S.role]) + (S.me.nip && S.me.tipe === 'staf' ? ' · ' + esc(S.me.nip) : '') + '</div></div><button class="icon-btn" data-act-global="keluar" aria-label="Keluar">' + ic('log-out') + '</button></div>' + kreditHtml(cfg).replace('class="kredit"', 'class="kredit sb-kredit"');
 
     $('#bottomnav').innerHTML = (BOTTOM[S.role] || []).map((b) => {
       const on = b[0] === nav || (b[0] === 'lainnya' && !(BOTTOM[S.role] || []).some((x) => x[0] === nav) && nav !== 'beranda');
@@ -392,7 +398,7 @@ const Publik = {
       if (!b.dataset.tetap) { b.querySelector('h1').textContent = cfg.nama_app || 'SMAPATISPA NEXORA'; const p = b.querySelector('p'); if (p) p.textContent = cfg.nama_sekolah || ''; }
     }
     const f = $('#auth .auth-foot');
-    if (f) f.innerHTML = 'Bantuan BK: ' + esc(cfg.lokasi_bk || 'Ruang BK') + (cfg.jam_layanan ? ' · ' + esc(cfg.jam_layanan) : '') + '<br>' + esc(cfg.nama_app || 'SMAPATISPA NEXORA') + ' v' + esc(cfg.versi || '1.0.0');
+    if (f) f.innerHTML = 'Bantuan BK: ' + esc(cfg.lokasi_bk || 'Ruang BK') + (cfg.jam_layanan ? ' · ' + esc(cfg.jam_layanan) : '') + '<br>' + esc(cfg.nama_app || 'SMAPATISPA NEXORA') + ' v' + esc(cfg.versi || '1.0.0') + kreditHtml(cfg);
   },
   login(a) {
     const cfg = S.pub || {};
@@ -410,7 +416,7 @@ const Publik = {
       '<button class="btn btn-primary btn-block btn-lg" type="submit">Masuk ' + ic('arrow-right') + '</button></form>' +
       '<div class="alert info mt">' + ic('info') + '<div>Akun baru akan diminta mengganti kata sandi saat pertama kali masuk.</div></div></div>' +
       '<div class="mt-l tc"><button class="btn btn-ghost" data-go="#/lacak">' + ic('search-check') + ' Lacak laporan anonim</button></div>' +
-      '<div class="auth-foot">Bantuan BK: ' + esc(cfg.lokasi_bk || 'Ruang BK') + (cfg.jam_layanan ? ' · ' + esc(cfg.jam_layanan) : '') + '<br>' + esc(cfg.nama_app || 'SMAPATISPA NEXORA') + ' v' + esc(cfg.versi || '1.0.0') + '</div></div>';
+      '<div class="auth-foot">Bantuan BK: ' + esc(cfg.lokasi_bk || 'Ruang BK') + (cfg.jam_layanan ? ' · ' + esc(cfg.jam_layanan) : '') + '<br>' + esc(cfg.nama_app || 'SMAPATISPA NEXORA') + ' v' + esc(cfg.versi || '1.0.0') + kreditHtml(cfg) + '</div></div>';
     bind(a, {
       tipe: (el) => { S.tipeLogin = el.dataset.k; Store.set('tipeLogin', el.dataset.k); Publik.login(a); $('#lg-id').focus(); },
       lihat: (el) => { const i = $('#lg-pw'); i.type = i.type === 'password' ? 'text' : 'password'; el.innerHTML = ic(i.type === 'password' ? 'eye' : 'eye-off'); },
@@ -468,7 +474,7 @@ const Publik = {
     a.innerHTML = '<div class="auth"><div class="auth-brand" data-tetap="1" style="margin:10px 0 16px">' + logoHtml(cfg) + '<h1 style="font-size:20px">Lacak Laporan</h1><p class="muted small">Pantau laporan tanpa masuk akun menggunakan kode lacak.</p></div>' +
       '<div class="auth-card"><form data-form="lacak"><div class="field"><label class="lbl">Kode lacak</label><div class="search-in">' + ic('key-round', 's') + '<input class="input mono" name="kode" placeholder="NXR-XXXXXX" value="' + esc(kodeAwal || '') + '" style="text-transform:uppercase;border-radius:12px" required></div></div>' +
       '<button class="btn btn-primary btn-block" type="submit">' + ic('search') + ' Lacak Status</button></form><div data-hasil class="mt-l"></div></div>' +
-      '<div class="mt-l tc"><button class="btn btn-ghost" data-go="#/masuk">' + ic('arrow-left') + ' Kembali ke halaman masuk</button></div></div>';
+      '<div class="mt-l tc"><button class="btn btn-ghost" data-go="#/masuk">' + ic('arrow-left') + ' Kembali ke halaman masuk</button></div><div class="auth-foot">' + kreditHtml(cfg) + '</div></div>';
     const cari = async (kode, btn) => {
       busy(btn, true);
       const r = await api('lacakLaporan', { kode });
@@ -483,7 +489,7 @@ const Publik = {
     const cfg = S.cfg || S.pub || {};
     a.hidden = false;
     a.innerHTML = '<div class="auth"><div class="auth-brand" data-tetap="1">' + logoHtml(cfg) + '<h1 style="font-size:20px">Verifikasi Surat</h1><p class="muted small">' + esc(cfg.nama_sekolah || '') + '</p></div><div class="auth-card" data-v>' + skeleton(3, 40) + '</div>' +
-      '<div class="mt-l tc"><button class="btn btn-ghost" data-go="#/' + (masuk ? 'beranda' : 'masuk') + '">' + ic('arrow-left') + ' ' + (masuk ? 'Kembali ke aplikasi' : 'Halaman masuk') + '</button></div></div>';
+      '<div class="mt-l tc"><button class="btn btn-ghost" data-go="#/' + (masuk ? 'beranda' : 'masuk') + '">' + ic('arrow-left') + ' ' + (masuk ? 'Kembali ke aplikasi' : 'Halaman masuk') + '</button></div><div class="auth-foot">' + kreditHtml(cfg) + '</div></div>';
     if (masuk) bind(a, {});
     const r = await api('verifikasiSurat', { kode });
     a.querySelector('[data-v]').innerHTML = r.success

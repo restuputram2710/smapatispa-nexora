@@ -68,7 +68,7 @@ halaman('lainnya', {
       '<button class="row" data-go="#/info" style="width:100%;padding:14px 16px;border:0;border-top:1px solid var(--border-soft);background:none;text-align:left;cursor:pointer">' + ic('circle-help') + '<span class="grow b">Bantuan & Pusat Informasi</span>' + ic('chevron-right', 's') + '</button>' +
       '<div class="row" style="padding:14px 16px;border-top:1px solid var(--border-soft)">' + ic('info') + '<div class="grow"><b>Tentang aplikasi</b><div class="xs muted">' + esc((S.cfg || {}).nama_app || '') + ' v' + esc((S.cfg || {}).versi || '1.0.0') + ' · ' + esc((S.cfg || {}).nama_sekolah || '') + '</div></div></div></div>' +
       '<div class="lockline mt">' + ic('lock', 's') + ' Sesi berakhir otomatis setelah 12 jam. Catatan konseling hanya dapat dibaca Guru BK.</div>' +
-      '<button class="btn btn-danger-o btn-block btn-lg mt-l" data-act-global="keluar">' + ic('log-out') + ' Keluar</button><div style="height:24px"></div></div>';
+      '<button class="btn btn-danger-o btn-block btn-lg mt-l" data-act-global="keluar">' + ic('log-out') + ' Keluar</button>' + kreditHtml().replace('class="kredit"', 'class="kredit mt-l"') + '<div style="height:24px"></div></div>';
     bind(el, {
       'change:tema': (c) => { const t = c.checked ? 'dark' : 'light'; Store.set('tema', t); terapkanTema(t); },
       sandi: () => App.showGantiSandi(false),
