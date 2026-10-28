@@ -73,12 +73,14 @@ const App = {
     S.pub = Store.get('pub', null);
     terapkanMerek(S.pub);
     const sesi = Store.get('sesi', null);
-    if (sesi && sesi.exp > Date.now() + 60000) Object.assign(S, { token: sesi.token, me: sesi.me, role: sesi.role, exp: sesi.exp });
+    if (sesi && sesi.exp > Date.now() + 60000) Object.assign(S, { token: sesi.token, me: sesi.me, role: sesi.role, exp: sesi.exp, wajibGanti: !!sesi.wajib });
     warmUp();
     App.muatPublik();
     window.addEventListener('hashchange', () => { S.navCount = (S.navCount || 0) + 1; App.route(); });
     App.ikatGlobal();
-    if (S.token) {
+    if (S.token && S.wajibGanti) {
+      App.showGantiSandi(true);       // belum ganti sandi awal: jangan muat data apa pun
+    } else if (S.token) {
       const c = Store.get(ukey('boot:' + S.role), null);
       if (c) { S.boot = c.data; S.cfg = c.data.cfg; terapkanMerek(S.cfg); }
       App.tampilShell();
@@ -91,11 +93,11 @@ const App = {
     setTimeout(() => $('#splash').remove(), 260);
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState !== 'visible' || !S.token) return;
+      if (document.visibilityState !== 'visible' || !S.token || S.wajibGanti) return;
       if (Date.now() - (S.lastBoot || 0) > 120000) { warmUp(); App.muatBoot(true); }
     });
     setInterval(() => {   // staf: segarkan diam-diam tiap 90 detik saat tab terlihat
-      if (S.token && S.me && S.me.tipe === 'staf' && document.visibilityState === 'visible' && Date.now() - (S.lastBoot || 0) > 85000) App.muatBoot(true);
+      if (S.token && !S.wajibGanti && S.me && S.me.tipe === 'staf' && document.visibilityState === 'visible' && Date.now() - (S.lastBoot || 0) > 85000) App.muatBoot(true);
     }, 30000);
   },
 
@@ -114,6 +116,7 @@ const App = {
 
   /** Muat bootstrap peran aktif (SWR). force = abaikan batas kesegaran. */
   async muatBoot(force) {
+    if (S.wajibGanti) return null;
     const role = S.role;
     S.loading = true;
     const res = await swr('boot:' + role, 'bootstrap', {}, (data, dariCache) => {
@@ -131,7 +134,7 @@ const App = {
     if (v && !S.boot) v.innerHTML = '<div class="wrap" style="padding-top:60px">' + emptyState('wifi-off', 'Gagal memuat data', r.message, '<button class="btn btn-primary mt" data-act-global="coba">' + ic('refresh-cw') + ' Coba lagi</button>') + '</div>';
   },
 
-  simpanSesi() { Store.set('sesi', { token: S.token, me: S.me, role: S.role, exp: S.exp }); },
+  simpanSesi() { Store.set('sesi', { token: S.token, me: S.me, role: S.role, exp: S.exp, wajib: !!S.wajibGanti }); },
 
   // ============================================================ AUTENTIKASI
   async masuk(tipe, id, sandi, btn) {
@@ -143,19 +146,21 @@ const App = {
     return r;
   },
   terimaSesi(d) {
-    S.token = d.token; S.me = d.me; S.role = d.me.role; S.exp = d.exp;
+    S.token = d.token; S.me = d.me; S.role = d.me.role; S.exp = d.exp; S.wajibGanti = !!d.wajibGanti;
     App.simpanSesi();
     if (d.wajibGanti) { App.showGantiSandi(true); return; }
-    S.boot = d.boot; S.cfg = d.boot.cfg; S.lastBoot = Date.now();
-    Store.set(ukey('boot:' + S.role), { t: Date.now(), h: hashStr(JSON.stringify(d.boot)), data: d.boot });
-    terapkanMerek(S.cfg);
+    if (d.boot) {
+      S.boot = d.boot; S.cfg = d.boot.cfg; S.lastBoot = Date.now();
+      Store.set(ukey('boot:' + S.role), { t: Date.now(), h: hashStr(JSON.stringify(d.boot)), data: d.boot });
+      terapkanMerek(S.cfg);
+    } else { S.boot = null; }
     App.tampilShell();
     if (location.hash === '#/beranda') App.route(); else location.hash = '#/beranda';
     toast('Selamat datang, ' + S.me.nama.split(',')[0] + '!', 'success');
   },
   logout(diam) {
     const tipe = S.me && S.me.tipe;
-    Object.assign(S, { token: '', me: null, role: '', boot: null, cfg: null, exp: 0 });
+    Object.assign(S, { token: '', me: null, role: '', boot: null, cfg: null, exp: 0, wajibGanti: false });
     Store.del('sesi');
     Modal.closeAll();
     $('#shell').hidden = true;
@@ -198,8 +203,11 @@ const App = {
   },
 
   showGantiSandi(wajib) {
+    if (wajib && !S.wajibGanti) { S.wajibGanti = true; App.simpanSesi(); }
+    const a = $('#auth');
+    if (!a.hidden && a.querySelector('[data-form=gs]')) return;   // sudah tampil: jangan hapus isian
     $('#shell').hidden = true;
-    const a = $('#auth'); a.hidden = false;
+    a.hidden = false;
     Publik.gantiSandi(a, wajib);
   },
 
@@ -249,6 +257,7 @@ const App = {
   route() {
     const { name, params } = parseHash();
     if (!S.token) return App.authRoute(name, params);
+    if (S.wajibGanti) return App.showGantiSandi(true);
     if (name === 'verifikasi') { $('#auth').hidden = false; $('#shell').hidden = true; return Publik.verifikasi($('#auth'), params[0], true); }
     if (!$('#auth').hidden) App.tampilShell();
     if (name === 'masuk' || !name) { location.replace('#/beranda'); return; }
