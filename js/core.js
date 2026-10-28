@@ -84,7 +84,7 @@ async function api(action, data, opt = {}) {
     if (res.success || !res.retryable) break;
   }
   if (!res.success && res.data && res.data.code === 'AUTH' && action !== 'login') onSessionExpired();
-  if (!res.success && res.data && res.data.code === 'GANTI_SANDI') App.showGantiSandi(true);
+  if (!res.success && res.data && res.data.code === 'GANTI_SANDI') App.showGantiSandi(true);   // tidak menggambar ulang bila sudah tampil
   return res;
 }
 
