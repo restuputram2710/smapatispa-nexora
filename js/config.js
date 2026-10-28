@@ -5,5 +5,5 @@
    (berakhiran /exec), lalu simpan.
    ============================================================ */
 window.NEXORA_CONFIG = {
-  GAS_URL: 'https://script.google.com/macros/s/XXXX/exec'
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbwqejo1Y0UjK7UWkjHmDQUXmfNQO8mGy7igB9q9NUoX8r-iurZU-iao97Yz8xM5spWF/exec'
 };
